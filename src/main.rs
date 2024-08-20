@@ -33,24 +33,26 @@ async fn main() -> Result<()> {
                 .short('m')
                 .long("model")
                 .value_name("MODEL")
-                .about("Sets the ChatGPT model")
-                .takes_value(true),
+                .help("Sets the ChatGPT model"),
         )
         .arg(
             Arg::new("api-key")
                 .short('k')
                 .long("api-key")
                 .value_name("API_KEY")
-                .about("Sets the ChatGPT API key")
-                .takes_value(true),
+                .help("Sets the ChatGPT API key"),
         )
         .get_matches();
 
-    let model = matches.value_of("model").unwrap_or_else(|| {
-        env::var("CHATGPT_MODEL").unwrap_or_else(|_| "gpt-3.5-turbo".to_string())
-    });
+    let model = matches
+        .get_one::<String>("model")
+        .cloned()
+        .unwrap_or_else(|| {
+            env::var("CHATGPT_MODEL").unwrap_or_else(|_| "gpt-3.5-turbo".to_string())
+        });
     let api_key = matches
-        .value_of("api-key")
+        .get_one::<String>("api-key")
+        .cloned()
         .unwrap_or_else(|| env::var("CHATGPT_API_KEY").expect("CHATGPT_API_KEY must be set"));
 
     let mut git_diff = String::new();
@@ -75,7 +77,7 @@ async fn main() -> Result<()> {
         .json::<ChatGPTResponse>()
         .await?;
 
-    if let Some(commit_message) = response.choices.get(0) {
+    if let Some(commit_message) = response.choices.first() {
         println!("{}", commit_message.text);
     } else {
         eprintln!("Failed to generate commit message");
