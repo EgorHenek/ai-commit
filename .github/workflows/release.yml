@@ -1,15 +1,15 @@
 name: Release
-
 on:
   push:
     tags:
       - 'v*'
-
+permissions:
+  contents: write
 jobs:
   create-release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
@@ -29,7 +29,6 @@ jobs:
             --title "${{ github.ref_name }}" \
             --notes-file CHANGELOG.md \
             --repo EgorHenek/ai-commit
-
   build-and-upload:
     needs: create-release
     strategy:
@@ -47,7 +46,7 @@ jobs:
             target: x86_64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
