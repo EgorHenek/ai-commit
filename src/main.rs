@@ -53,7 +53,7 @@ async fn main() -> Result<()> {
     let api_key = matches
         .get_one::<String>("api-key")
         .cloned()
-        .unwrap_or_else(|| env::var("CHATGPT_API_KEY").expect("CHATGPT_API_KEY must be set"));
+        .unwrap_or_else(|| env::var("OPENAI_API_KEY").expect("OPENAI_API_KEY must be set"));
 
     let mut git_diff = String::new();
     io::stdin().read_to_string(&mut git_diff)?;
