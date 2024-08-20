@@ -25,7 +25,7 @@ async fn main() -> Result<()> {
                 .short('m')
                 .long("model")
                 .value_name("MODEL")
-                .help("Sets the AI model (default: gpt-4-mini)"),
+                .help("Sets the AI model (default: gpt-4o-mini)"),
         )
         .arg(
             Arg::new("api-key")
@@ -47,7 +47,7 @@ async fn main() -> Result<()> {
     let model = matches
         .get_one::<String>("model")
         .cloned()
-        .unwrap_or_else(|| env::var("AI_MODEL").unwrap_or_else(|_| "gpt-4-mini".to_string()));
+        .unwrap_or_else(|| env::var("AI_MODEL").unwrap_or_else(|_| "gpt-4o-mini".to_string()));
 
     let provider_type: ProviderType = matches
         .get_one::<String>("provider")
@@ -55,12 +55,15 @@ async fn main() -> Result<()> {
         .parse()
         .expect("Invalid provider type");
 
-    let api_key = matches.get_one::<String>("api-key").cloned().unwrap_or_else(|| {
-        match provider_type {
+    let api_key = matches
+        .get_one::<String>("api-key")
+        .cloned()
+        .unwrap_or_else(|| match provider_type {
             ProviderType::OpenAI => env::var("OPENAI_API_KEY").expect("OPENAI_API_KEY must be set"),
-            ProviderType::OpenRouter => env::var("OPENROUTER_API_KEY").expect("OPENROUTER_API_KEY must be set"),
-        }
-    });
+            ProviderType::OpenRouter => {
+                env::var("OPENROUTER_API_KEY").expect("OPENROUTER_API_KEY must be set")
+            }
+        });
 
     let mut git_diff = String::new();
     io::stdin().read_to_string(&mut git_diff)?;
@@ -69,11 +72,11 @@ async fn main() -> Result<()> {
         ProviderType::OpenAI => {
             let provider = OpenAIProvider::new(api_key, model);
             provider.generate_commit_message(&git_diff).await?
-        },
+        }
         ProviderType::OpenRouter => {
             let provider = OpenRouterProvider::new(api_key, model);
             provider.generate_commit_message(&git_diff).await?
-        },
+        }
     };
     println!("{}", commit_message);
 
