@@ -1,7 +1,7 @@
 use anyhow::Result;
+use async_trait::async_trait;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
-use async_trait::async_trait;
 use serde_json::Value;
 
 #[async_trait]
@@ -14,14 +14,16 @@ pub struct BaseProvider {
     api_key: String,
     model: String,
     client: Client,
+    base_url: String,
 }
 
 impl BaseProvider {
-    pub fn new(api_key: String, model: String) -> Self {
+    pub fn new(api_key: String, model: String, base_url: String) -> Self {
         Self {
             api_key,
             model,
             client: Client::new(),
+            base_url,
         }
     }
 }
@@ -31,13 +33,21 @@ pub struct OpenRouterProvider(BaseProvider);
 
 impl OpenAIProvider {
     pub fn new(api_key: String, model: String) -> Self {
-        Self(BaseProvider::new(api_key, model))
+        Self(BaseProvider::new(
+            api_key,
+            model,
+            "https://api.openai.com".to_string(),
+        ))
     }
 }
 
 impl OpenRouterProvider {
     pub fn new(api_key: String, model: String) -> Self {
-        Self(BaseProvider::new(api_key, model))
+        Self(BaseProvider::new(
+            api_key,
+            model,
+            "https://openrouter.ai/api".to_string(),
+        ))
     }
 }
 
@@ -70,33 +80,45 @@ impl AIProvider for OpenAIProvider {
             max_tokens: 50,
         };
 
-        let response = self.0.client
-            .post("https://api.openai.com/v1/completions")
+        let response = self
+            .0
+            .client
+            .post(format!("{}/v1/completions", self.0.base_url))
             .header("Authorization", format!("Bearer {}", self.0.api_key))
             .json(&request_body)
             .send()
             .await?;
 
         if !response.status().is_success() {
-            return Err(anyhow::anyhow!("OpenAI API request failed: {}", response.status()));
+            return Err(anyhow::anyhow!(
+                "OpenAI API request failed: {}",
+                response.status()
+            ));
         }
 
         let response: AIResponse = response.json().await?;
 
-        response.choices.first()
+        response
+            .choices
+            .first()
             .map(|choice| choice.text.trim().to_string())
             .ok_or_else(|| anyhow::anyhow!("No commit message generated"))
     }
 
     async fn list_models(&self) -> Result<Vec<String>> {
-        let response = self.0.client
-            .get("https://api.openai.com/v1/models")
+        let response = self
+            .0
+            .client
+            .get(format!("{}/v1/models", self.0.base_url))
             .header("Authorization", format!("Bearer {}", self.0.api_key))
             .send()
             .await?;
 
         if !response.status().is_success() {
-            return Err(anyhow::anyhow!("OpenAI API request failed: {}", response.status()));
+            return Err(anyhow::anyhow!(
+                "OpenAI API request failed: {}",
+                response.status()
+            ));
         }
 
         let response: Value = response.json().await?;
@@ -123,8 +145,10 @@ impl AIProvider for OpenRouterProvider {
             max_tokens: 50,
         };
 
-        let response = self.0.client
-            .post("https://openrouter.ai/api/v1/chat/completions")
+        let response = self
+            .0
+            .client
+            .post(format!("{}/v1/chat/completions", self.0.base_url))
             .header("Authorization", format!("Bearer {}", self.0.api_key))
             .header("HTTP-Referer", "https://github.com/your-repo/ai-commit")
             .header("X-Title", "AI Commit Generator")
@@ -133,19 +157,26 @@ impl AIProvider for OpenRouterProvider {
             .await?;
 
         if !response.status().is_success() {
-            return Err(anyhow::anyhow!("OpenRouter API request failed: {}", response.status()));
+            return Err(anyhow::anyhow!(
+                "OpenRouter API request failed: {}",
+                response.status()
+            ));
         }
 
         let response: AIResponse = response.json().await?;
 
-        response.choices.first()
+        response
+            .choices
+            .first()
             .map(|choice| choice.text.trim().to_string())
             .ok_or_else(|| anyhow::anyhow!("No commit message generated"))
     }
 
     async fn list_models(&self) -> Result<Vec<String>> {
-        let response = self.0.client
-            .get("https://openrouter.ai/api/v1/models")
+        let response = self
+            .0
+            .client
+            .get(format!("{}/v1/models", self.0.base_url))
             .header("Authorization", format!("Bearer {}", self.0.api_key))
             .header("HTTP-Referer", "https://github.com/your-repo/ai-commit")
             .header("X-Title", "AI Commit Generator")
@@ -153,7 +184,10 @@ impl AIProvider for OpenRouterProvider {
             .await?;
 
         if !response.status().is_success() {
-            return Err(anyhow::anyhow!("OpenRouter API request failed: {}", response.status()));
+            return Err(anyhow::anyhow!(
+                "OpenRouter API request failed: {}",
+                response.status()
+            ));
         }
 
         let response: Value = response.json().await?;

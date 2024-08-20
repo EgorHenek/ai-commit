@@ -4,13 +4,18 @@ mod tests {
 
     #[tokio::test]
     async fn test_openai_generate_commit_message() {
-        let mock = mockito::mock("POST", "/v1/completions")
+        let mock_server = mockito::Server::new();
+        let mock = mock_server.mock("POST", "/v1/completions")
             .with_status(200)
             .with_header("content-type", "application/json")
             .with_body(r#"{"choices":[{"text":"feat: Add new feature"}]}"#)
             .create();
 
-        let provider = OpenAIProvider::new("test_key".to_string(), "test_model".to_string());
+        let provider = OpenAIProvider(BaseProvider::new(
+            "test_key".to_string(),
+            "test_model".to_string(),
+            mock_server.url(),
+        ));
         let result = provider.generate_commit_message("test diff").await;
 
         mock.assert();
