@@ -1,4 +1,6 @@
 mod providers;
+#[cfg(test)]
+mod providers_test;
 
 use anyhow::Result;
 use clap::{Arg, Command};

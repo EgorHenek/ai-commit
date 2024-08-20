@@ -12,3 +12,6 @@ serde_json = "1.0"
 tokio = { version = "1", features = ["full"] }
 strum = { version = "0.24", features = ["derive"] }
 async-trait = "0.1"
+
+[dev-dependencies]
+mockito = "0.31"

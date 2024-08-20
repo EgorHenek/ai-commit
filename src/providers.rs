@@ -10,25 +10,34 @@ pub trait AIProvider {
     async fn list_models(&self) -> Result<Vec<String>>;
 }
 
-pub struct OpenAIProvider {
+pub struct BaseProvider {
     api_key: String,
     model: String,
+    client: Client,
 }
 
-pub struct OpenRouterProvider {
-    api_key: String,
-    model: String,
+impl BaseProvider {
+    pub fn new(api_key: String, model: String) -> Self {
+        Self {
+            api_key,
+            model,
+            client: Client::new(),
+        }
+    }
 }
+
+pub struct OpenAIProvider(BaseProvider);
+pub struct OpenRouterProvider(BaseProvider);
 
 impl OpenAIProvider {
     pub fn new(api_key: String, model: String) -> Self {
-        Self { api_key, model }
+        Self(BaseProvider::new(api_key, model))
     }
 }
 
 impl OpenRouterProvider {
     pub fn new(api_key: String, model: String) -> Self {
-        Self { api_key, model }
+        Self(BaseProvider::new(api_key, model))
     }
 }
 
@@ -52,9 +61,8 @@ struct AIChoice {
 #[async_trait::async_trait]
 impl AIProvider for OpenAIProvider {
     async fn generate_commit_message(&self, git_diff: &str) -> Result<String> {
-        let client = Client::new();
         let request_body = AIRequest {
-            model: self.model.clone(),
+            model: self.0.model.clone(),
             prompt: format!(
                 "Generate a concise conventional commit message for the following git diff. Provide only the commit message, without any additional text or formatting:\n{}",
                 git_diff
@@ -62,9 +70,9 @@ impl AIProvider for OpenAIProvider {
             max_tokens: 50,
         };
 
-        let response = client
+        let response = self.0.client
             .post("https://api.openai.com/v1/completions")
-            .header("Authorization", format!("Bearer {}", self.api_key))
+            .header("Authorization", format!("Bearer {}", self.0.api_key))
             .json(&request_body)
             .send()
             .await?;
@@ -81,10 +89,9 @@ impl AIProvider for OpenAIProvider {
     }
 
     async fn list_models(&self) -> Result<Vec<String>> {
-        let client = Client::new();
-        let response = client
+        let response = self.0.client
             .get("https://api.openai.com/v1/models")
-            .header("Authorization", format!("Bearer {}", self.api_key))
+            .header("Authorization", format!("Bearer {}", self.0.api_key))
             .send()
             .await?;
 
@@ -107,9 +114,8 @@ impl AIProvider for OpenAIProvider {
 #[async_trait::async_trait]
 impl AIProvider for OpenRouterProvider {
     async fn generate_commit_message(&self, git_diff: &str) -> Result<String> {
-        let client = Client::new();
         let request_body = AIRequest {
-            model: self.model.clone(),
+            model: self.0.model.clone(),
             prompt: format!(
                 "Generate a concise conventional commit message for the following git diff. Provide only the commit message, without any additional text or formatting:\n{}",
                 git_diff
@@ -117,9 +123,9 @@ impl AIProvider for OpenRouterProvider {
             max_tokens: 50,
         };
 
-        let response = client
+        let response = self.0.client
             .post("https://openrouter.ai/api/v1/chat/completions")
-            .header("Authorization", format!("Bearer {}", self.api_key))
+            .header("Authorization", format!("Bearer {}", self.0.api_key))
             .header("HTTP-Referer", "https://github.com/your-repo/ai-commit")
             .header("X-Title", "AI Commit Generator")
             .json(&request_body)
@@ -138,10 +144,9 @@ impl AIProvider for OpenRouterProvider {
     }
 
     async fn list_models(&self) -> Result<Vec<String>> {
-        let client = Client::new();
-        let response = client
+        let response = self.0.client
             .get("https://openrouter.ai/api/v1/models")
-            .header("Authorization", format!("Bearer {}", self.api_key))
+            .header("Authorization", format!("Bearer {}", self.0.api_key))
             .header("HTTP-Referer", "https://github.com/your-repo/ai-commit")
             .header("X-Title", "AI Commit Generator")
             .send()
