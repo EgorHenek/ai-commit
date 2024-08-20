@@ -3,11 +3,8 @@ mod providers;
 mod providers_test;
 
 use anyhow::Result;
-use clap::{crate_authors, crate_description, Arg, Command};
+use clap::{crate_authors, crate_description, crate_version, Arg, Command};
 
-pub mod built_info {
-    include!(concat!(env!("OUT_DIR"), "/built.rs"));
-}
 use providers::{AIProvider, OpenAIProvider, OpenRouterProvider};
 use std::env;
 use std::io::{self, Read};
@@ -23,10 +20,9 @@ enum ProviderType {
 #[tokio::main]
 async fn main() -> Result<()> {
     let matches = Command::new("ai-commit")
-        .version(built_info::PKG_VERSION)
+        .version(crate_version!())
         .author(crate_authors!())
         .about(crate_description!())
-        .long_version(format!("{}\nRevision: {}", built_info::PKG_VERSION, built_info::GIT_VERSION.unwrap_or("unknown")).as_str())
         .arg(
             Arg::new("model")
                 .short('m')

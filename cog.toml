@@ -1,4 +1,8 @@
 # Configuration file for cocogitto
+pre_bump_hooks = [
+  "cargo build --release",         # verify the project builds
+  "cargo set-version {{version}}", # bump version in Cargo.toml
+]
 
 [changelog]
 # Path where the changelog will be written
@@ -8,10 +12,6 @@ template = "remote"
 # Remote repository URL
 remote = "github.com"
 # Repository owner
-repository_owner = "EgorHenek"
+owner = "EgorHenek"
 # Repository name
-repository_name = "ai-commit"
-
-[bump_version]
-# Files to update when bumping version
-files = ["Cargo.toml"]
+repository = "ai-commit"
