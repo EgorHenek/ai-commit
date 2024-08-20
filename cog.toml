@@ -1,0 +1,17 @@
+# Configuration file for cocogitto
+
+[changelog]
+# Path where the changelog will be written
+path = "CHANGELOG.md"
+# Template to use for the changelog
+template = "remote"
+# Remote repository URL
+remote = "github.com"
+# Repository owner
+repository_owner = "EgorHenek"
+# Repository name
+repository_name = "ai-commit"
+
+[bump_version]
+# Files to update when bumping version
+files = ["Cargo.toml"]

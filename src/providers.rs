@@ -154,7 +154,7 @@ impl AIProvider for OpenRouterProvider {
             .client
             .post(format!("{}/v1/chat/completions", self.0.base_url))
             .header("Authorization", format!("Bearer {}", self.0.api_key))
-            .header("HTTP-Referer", "https://github.com/your-repo/ai-commit")
+            .header("HTTP-Referer", "https://github.com/EgorHenek/ai-commit")
             .header("X-Title", "AI Commit Generator")
             .json(&request_body)
             .send()
@@ -182,7 +182,7 @@ impl AIProvider for OpenRouterProvider {
             .client
             .get(format!("{}/v1/models", self.0.base_url))
             .header("Authorization", format!("Bearer {}", self.0.api_key))
-            .header("HTTP-Referer", "https://github.com/your-repo/ai-commit")
+            .header("HTTP-Referer", "https://github.com/EgorHenek/ai-commit")
             .header("X-Title", "AI Commit Generator")
             .send()
             .await?;

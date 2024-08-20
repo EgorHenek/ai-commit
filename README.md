@@ -11,10 +11,28 @@ AI Commit is a command-line tool that generates commit messages using AI. It sup
 
 ## Installation
 
-To install AI Commit, make sure you have Rust and Cargo installed on your system. Then, clone this repository and build the project:
+You can install AI Commit by downloading the pre-built binary for your system from the [latest release](https://github.com/EgorHenek/ai-commit/releases/latest) on GitHub.
+
+1. Download the appropriate archive for your system:
+   - For macOS (Intel): `ai-commit-x86_64-apple-darwin.tar.gz`
+   - For macOS (Apple Silicon): `ai-commit-aarch64-apple-darwin.tar.gz`
+   - For Linux (x86_64): `ai-commit-x86_64-unknown-linux-gnu.tar.gz`
+   - For Linux (ARM64): `ai-commit-aarch64-unknown-linux-gnu.tar.gz`
+   - For Windows: `ai-commit-x86_64-pc-windows-msvc.zip`
+
+2. Extract the archive:
+   - For `.tar.gz` files: `tar xzf ai-commit-<version>.tar.gz`
+   - For `.zip` files: Unzip using your preferred tool
+
+3. Move the `ai-commit` binary to a directory in your PATH, for example:
+   ```
+   sudo mv ai-commit /usr/local/bin/
+   ```
+
+Alternatively, if you prefer to build from source, make sure you have Rust and Cargo installed on your system. Then, clone this repository and build the project:
 
 ```
-git clone https://github.com/your-username/ai-commit.git
+git clone https://github.com/EgorHenek/ai-commit.git
 cd ai-commit
 cargo build --release
 ```
