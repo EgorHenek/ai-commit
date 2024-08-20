@@ -26,10 +26,14 @@ impl BaseProvider {
             base_url,
         }
     }
+
+    pub fn set_base_url(&mut self, base_url: String) {
+        self.base_url = base_url;
+    }
 }
 
-pub struct OpenAIProvider(BaseProvider);
-pub struct OpenRouterProvider(BaseProvider);
+pub struct OpenAIProvider(pub BaseProvider);
+pub struct OpenRouterProvider(pub BaseProvider);
 
 impl OpenAIProvider {
     pub fn new(api_key: String, model: String) -> Self {

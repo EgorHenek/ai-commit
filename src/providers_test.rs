@@ -4,18 +4,16 @@ mod tests {
 
     #[tokio::test]
     async fn test_openai_generate_commit_message() {
-        let mock_server = mockito::Server::new();
-        let mock = mock_server.mock("POST", "/v1/completions")
+        let mut server = mockito::Server::new();
+        let mock = server
+            .mock("POST", "/v1/completions")
             .with_status(200)
             .with_header("content-type", "application/json")
             .with_body(r#"{"choices":[{"text":"feat: Add new feature"}]}"#)
             .create();
 
-        let provider = OpenAIProvider(BaseProvider::new(
-            "test_key".to_string(),
-            "test_model".to_string(),
-            mock_server.url(),
-        ));
+        let mut provider = OpenAIProvider::new("test_key".to_string(), "test_model".to_string());
+        provider.0.set_base_url(server.url());
         let result = provider.generate_commit_message("test diff").await;
 
         mock.assert();
@@ -25,13 +23,16 @@ mod tests {
 
     #[tokio::test]
     async fn test_openrouter_generate_commit_message() {
-        let mock = mockito::mock("POST", "/api/v1/chat/completions")
+        let mut server = mockito::Server::new();
+        let mock = server
+            .mock("POST", "/v1/chat/completions")
             .with_status(200)
             .with_header("content-type", "application/json")
             .with_body(r#"{"choices":[{"text":"fix: Resolve bug"}]}"#)
             .create();
 
-        let provider = OpenRouterProvider::new("test_key".to_string(), "test_model".to_string());
+        let mut provider = OpenRouterProvider::new("test_key".to_string(), "test_model".to_string());
+        provider.0.set_base_url(server.url());
         let result = provider.generate_commit_message("test diff").await;
 
         mock.assert();
@@ -41,13 +42,16 @@ mod tests {
 
     #[tokio::test]
     async fn test_openai_list_models() {
-        let mock = mockito::mock("GET", "/v1/models")
+        let mut server = mockito::Server::new();
+        let mock = server
+            .mock("GET", "/v1/models")
             .with_status(200)
             .with_header("content-type", "application/json")
             .with_body(r#"{"data":[{"id":"model1"},{"id":"model2"}]}"#)
             .create();
 
-        let provider = OpenAIProvider::new("test_key".to_string(), "test_model".to_string());
+        let mut provider = OpenAIProvider::new("test_key".to_string(), "test_model".to_string());
+        provider.0.set_base_url(server.url());
         let result = provider.list_models().await;
 
         mock.assert();
@@ -60,13 +64,16 @@ mod tests {
 
     #[tokio::test]
     async fn test_openrouter_list_models() {
-        let mock = mockito::mock("GET", "/api/v1/models")
+        let mut server = mockito::Server::new();
+        let mock = server
+            .mock("GET", "/v1/models")
             .with_status(200)
             .with_header("content-type", "application/json")
             .with_body(r#"{"data":[{"id":"model3"},{"id":"model4"}]}"#)
             .create();
 
-        let provider = OpenRouterProvider::new("test_key".to_string(), "test_model".to_string());
+        let mut provider = OpenRouterProvider::new("test_key".to_string(), "test_model".to_string());
+        provider.0.set_base_url(server.url());
         let result = provider.list_models().await;
 
         mock.assert();
