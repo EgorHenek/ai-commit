@@ -27,6 +27,7 @@ impl BaseProvider {
         }
     }
 
+    #[cfg(test)]
     pub fn set_base_url(&mut self, base_url: String) {
         self.base_url = base_url;
     }
