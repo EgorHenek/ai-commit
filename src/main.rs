@@ -3,11 +3,11 @@ mod providers;
 mod providers_test;
 
 use anyhow::Result;
-use clap::{Arg, Command};
+use clap::{crate_authors, crate_description, crate_version, Arg, Command};
 use providers::{AIProvider, OpenAIProvider, OpenRouterProvider};
 use std::env;
 use std::io::{self, Read};
-use strum::{EnumString, Display};
+use strum::{Display, EnumString};
 
 #[derive(Debug, EnumString, Display)]
 #[strum(serialize_all = "lowercase")]
@@ -19,9 +19,9 @@ enum ProviderType {
 #[tokio::main]
 async fn main() -> Result<()> {
     let matches = Command::new("ai-commit")
-        .version("0.1.0")
-        .author("Your Name <your.email@example.com>")
-        .about("Generates a commit message using AI")
+        .version(crate_version!())
+        .author(crate_authors!())
+        .about(crate_description!())
         .arg(
             Arg::new("model")
                 .short('m')
