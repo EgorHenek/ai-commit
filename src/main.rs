@@ -63,12 +63,16 @@ async fn main() -> Result<()> {
     let mut git_diff = String::new();
     io::stdin().read_to_string(&mut git_diff)?;
 
-    let provider: Box<dyn AIProvider> = match provider_type {
-        ProviderType::OpenAI => Box::new(OpenAIProvider::new(api_key, model)),
-        ProviderType::OpenRouter => Box::new(OpenRouterProvider::new(api_key, model)),
+    let commit_message = match provider_type {
+        ProviderType::OpenAI => {
+            let provider = OpenAIProvider::new(api_key, model);
+            provider.generate_commit_message(&git_diff).await?
+        },
+        ProviderType::OpenRouter => {
+            let provider = OpenRouterProvider::new(api_key, model);
+            provider.generate_commit_message(&git_diff).await?
+        },
     };
-
-    let commit_message = provider.generate_commit_message(&git_diff).await?;
     println!("{}", commit_message);
 
     Ok(())

@@ -1,8 +1,9 @@
 use anyhow::Result;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use async_trait::async_trait;
 
-#[async_trait::async_trait]
+#[async_trait]
 pub trait AIProvider {
     async fn generate_commit_message(&self, git_diff: &str) -> Result<String>;
 }
