@@ -25,7 +25,7 @@ async fn main() -> Result<()> {
                 .short('m')
                 .long("model")
                 .value_name("MODEL")
-                .help("Sets the AI model"),
+                .help("Sets the AI model (default: gpt-4-mini)"),
         )
         .arg(
             Arg::new("api-key")
@@ -47,7 +47,7 @@ async fn main() -> Result<()> {
     let model = matches
         .get_one::<String>("model")
         .cloned()
-        .unwrap_or_else(|| env::var("AI_MODEL").unwrap_or_else(|_| "gpt-3.5-turbo".to_string()));
+        .unwrap_or_else(|| env::var("AI_MODEL").unwrap_or_else(|_| "gpt-4-mini".to_string()));
 
     let provider_type: ProviderType = matches
         .get_one::<String>("provider")
