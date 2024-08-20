@@ -5,9 +5,9 @@ use clap::{Arg, Command};
 use providers::{AIProvider, OpenAIProvider, OpenRouterProvider};
 use std::env;
 use std::io::{self, Read};
-use strum::EnumString;
+use strum::{EnumString, Display};
 
-#[derive(Debug, EnumString)]
+#[derive(Debug, EnumString, Display)]
 #[strum(serialize_all = "lowercase")]
 enum ProviderType {
     OpenAI,
@@ -42,6 +42,12 @@ async fn main() -> Result<()> {
                 .help("Sets the AI provider (openai or openrouter)")
                 .default_value("openai"),
         )
+        .arg(
+            Arg::new("list-models")
+                .long("list-models")
+                .help("Lists available models for the selected provider")
+                .action(clap::ArgAction::SetTrue),
+        )
         .get_matches();
 
     let model = matches
@@ -65,20 +71,37 @@ async fn main() -> Result<()> {
             }
         });
 
-    let mut git_diff = String::new();
-    io::stdin().read_to_string(&mut git_diff)?;
+    if matches.get_flag("list-models") {
+        let models = match provider_type {
+            ProviderType::OpenAI => {
+                let provider = OpenAIProvider::new(api_key, model);
+                provider.list_models().await?
+            }
+            ProviderType::OpenRouter => {
+                let provider = OpenRouterProvider::new(api_key, model);
+                provider.list_models().await?
+            }
+        };
+        println!("Available models for {}:", provider_type);
+        for model in models {
+            println!("- {}", model);
+        }
+    } else {
+        let mut git_diff = String::new();
+        io::stdin().read_to_string(&mut git_diff)?;
 
-    let commit_message = match provider_type {
-        ProviderType::OpenAI => {
-            let provider = OpenAIProvider::new(api_key, model);
-            provider.generate_commit_message(&git_diff).await?
-        }
-        ProviderType::OpenRouter => {
-            let provider = OpenRouterProvider::new(api_key, model);
-            provider.generate_commit_message(&git_diff).await?
-        }
-    };
-    println!("{}", commit_message);
+        let commit_message = match provider_type {
+            ProviderType::OpenAI => {
+                let provider = OpenAIProvider::new(api_key, model);
+                provider.generate_commit_message(&git_diff).await?
+            }
+            ProviderType::OpenRouter => {
+                let provider = OpenRouterProvider::new(api_key, model);
+                provider.generate_commit_message(&git_diff).await?
+            }
+        };
+        println!("{}", commit_message);
+    }
 
     Ok(())
 }

@@ -2,10 +2,12 @@ use anyhow::Result;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use async_trait::async_trait;
+use serde_json::Value;
 
 #[async_trait]
 pub trait AIProvider {
     async fn generate_commit_message(&self, git_diff: &str) -> Result<String>;
+    async fn list_models(&self) -> Result<Vec<String>>;
 }
 
 pub struct OpenAIProvider {
@@ -77,6 +79,29 @@ impl AIProvider for OpenAIProvider {
             .map(|choice| choice.text.trim().to_string())
             .ok_or_else(|| anyhow::anyhow!("No commit message generated"))
     }
+
+    async fn list_models(&self) -> Result<Vec<String>> {
+        let client = Client::new();
+        let response = client
+            .get("https://api.openai.com/v1/models")
+            .header("Authorization", format!("Bearer {}", self.api_key))
+            .send()
+            .await?;
+
+        if !response.status().is_success() {
+            return Err(anyhow::anyhow!("OpenAI API request failed: {}", response.status()));
+        }
+
+        let response: Value = response.json().await?;
+        let models = response["data"]
+            .as_array()
+            .ok_or_else(|| anyhow::anyhow!("Invalid response format"))?
+            .iter()
+            .filter_map(|model| model["id"].as_str().map(String::from))
+            .collect();
+
+        Ok(models)
+    }
 }
 
 #[async_trait::async_trait]
@@ -110,5 +135,30 @@ impl AIProvider for OpenRouterProvider {
         response.choices.first()
             .map(|choice| choice.text.trim().to_string())
             .ok_or_else(|| anyhow::anyhow!("No commit message generated"))
+    }
+
+    async fn list_models(&self) -> Result<Vec<String>> {
+        let client = Client::new();
+        let response = client
+            .get("https://openrouter.ai/api/v1/models")
+            .header("Authorization", format!("Bearer {}", self.api_key))
+            .header("HTTP-Referer", "https://github.com/your-repo/ai-commit")
+            .header("X-Title", "AI Commit Generator")
+            .send()
+            .await?;
+
+        if !response.status().is_success() {
+            return Err(anyhow::anyhow!("OpenRouter API request failed: {}", response.status()));
+        }
+
+        let response: Value = response.json().await?;
+        let models = response["data"]
+            .as_array()
+            .ok_or_else(|| anyhow::anyhow!("Invalid response format"))?
+            .iter()
+            .filter_map(|model| model["id"].as_str().map(String::from))
+            .collect();
+
+        Ok(models)
     }
 }
