@@ -73,14 +73,19 @@ async fn main() -> Result<()> {
         .header("Authorization", format!("Bearer {}", api_key))
         .json(&request_body)
         .send()
-        .await?
-        .json::<ChatGPTResponse>()
         .await?;
 
-    if let Some(commit_message) = response.choices.first() {
-        println!("{}", commit_message.text);
+    if !response.status().is_success() {
+        eprintln!("Failed to send request: {}", response.status());
+        return Err(anyhow::anyhow!("API request failed"));
+    }
+
+    let response: ChatGPTResponse = response.json().await?;
+
+    if response.choices.is_empty() {
+        eprintln!("Failed to generate commit message: No choices returned");
     } else {
-        eprintln!("Failed to generate commit message");
+        println!("{}", response.choices[0].text);
     }
 
     Ok(())
