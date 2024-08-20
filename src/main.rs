@@ -1,3 +1,4 @@
+use anyhow::Result;
 use clap::{Arg, Command};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
@@ -22,7 +23,7 @@ struct ChatGPTChoice {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> Result<()> {
     let matches = Command::new("ai-commit")
         .version("0.1.0")
         .author("Your Name <your.email@example.com>")
@@ -45,8 +46,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .get_matches();
 
-    let model = matches.value_of("model").unwrap_or_else(|| env::var("CHATGPT_MODEL").unwrap_or_else(|_| "gpt-3.5-turbo".to_string()));
-    let api_key = matches.value_of("api-key").unwrap_or_else(|| env::var("CHATGPT_API_KEY").expect("CHATGPT_API_KEY must be set"));
+    let model = matches.value_of("model").unwrap_or_else(|| {
+        env::var("CHATGPT_MODEL").unwrap_or_else(|_| "gpt-3.5-turbo".to_string())
+    });
+    let api_key = matches
+        .value_of("api-key")
+        .unwrap_or_else(|| env::var("CHATGPT_API_KEY").expect("CHATGPT_API_KEY must be set"));
 
     let mut git_diff = String::new();
     io::stdin().read_to_string(&mut git_diff)?;
@@ -54,7 +59,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = Client::new();
     let request_body = ChatGPTRequest {
         model: model.to_string(),
-        prompt: format!("Generate a conventional commit message for the following git diff:\n{}", git_diff),
+        prompt: format!(
+            "Generate a conventional commit message for the following git diff:\n{}",
+            git_diff
+        ),
         max_tokens: 50,
     };
 
