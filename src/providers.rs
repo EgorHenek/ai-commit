@@ -56,7 +56,7 @@ impl AIProvider for OpenAIProvider {
         let request_body = AIRequest {
             model: self.model.clone(),
             prompt: format!(
-                "Generate a conventional commit message for the following git diff:\n{}",
+                "Generate a concise conventional commit message for the following git diff. Provide only the commit message, without any additional text or formatting:\n{}",
                 git_diff
             ),
             max_tokens: 50,
@@ -111,7 +111,7 @@ impl AIProvider for OpenRouterProvider {
         let request_body = AIRequest {
             model: self.model.clone(),
             prompt: format!(
-                "Generate a conventional commit message for the following git diff:\n{}",
+                "Generate a concise conventional commit message for the following git diff. Provide only the commit message, without any additional text or formatting:\n{}",
                 git_diff
             ),
             max_tokens: 50,
