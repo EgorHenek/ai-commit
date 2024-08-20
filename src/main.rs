@@ -49,16 +49,18 @@ async fn main() -> Result<()> {
         .cloned()
         .unwrap_or_else(|| env::var("AI_MODEL").unwrap_or_else(|_| "gpt-3.5-turbo".to_string()));
 
-    let api_key = matches
-        .get_one::<String>("api-key")
-        .cloned()
-        .unwrap_or_else(|| env::var("AI_API_KEY").expect("AI_API_KEY must be set"));
-
     let provider_type: ProviderType = matches
         .get_one::<String>("provider")
         .unwrap()
         .parse()
         .expect("Invalid provider type");
+
+    let api_key = matches.get_one::<String>("api-key").cloned().unwrap_or_else(|| {
+        match provider_type {
+            ProviderType::OpenAI => env::var("OPENAI_API_KEY").expect("OPENAI_API_KEY must be set"),
+            ProviderType::OpenRouter => env::var("OPENROUTER_API_KEY").expect("OPENROUTER_API_KEY must be set"),
+        }
+    });
 
     let mut git_diff = String::new();
     io::stdin().read_to_string(&mut git_diff)?;
