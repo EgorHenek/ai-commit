@@ -23,6 +23,16 @@ cargo install ai-commit
 
 This will download, compile, and install the latest version of AI Commit.
 
+### Using Cargo binstall
+
+You can use [cargo-binstall](https://github.com/cargo-bins/cargo-binstall) if you don't want to wait to build from source files.
+
+```
+cargo binstall ai-commit
+```
+
+This will download the latest version of AI Commit for your operating system.
+
 ### Pre-built Binaries
 
 You can also download pre-built binaries for your system from the [latest release](https://github.com/EgorHenek/ai-commit/releases/latest) on GitHub.
